@@ -5,9 +5,11 @@
 package com.jetbrains.entrytasks.fileindexer
 
 import com.jetbrains.entrytasks.fileindexer.lib.Indexer
+import com.jetbrains.entrytasks.fileindexer.lib.LineInfo
 import java.awt.Dimension
 import java.awt.EventQueue
 import java.io.File
+import java.nio.file.Paths
 import javax.swing.*
 
 fun main(args: Array<String>) {
@@ -154,7 +156,7 @@ class IndexerGUI : JFrame() {
             }
             results.text = ""
             for (li in res.get()) {
-                results.append(li.toString() + "\n")
+                results.append(retrieveAndFormat(li) + "\n")
             }
         }
 
@@ -182,11 +184,16 @@ private fun indexerCLI(args: Array<String>) {
         val input = readLine()?.trim()?.toLowerCase() ?: "q"
         if (input.startsWith('q')) break
         if (input.startsWith('p')) {
-            indexer.index.lookup(term).ifPresent { it.forEach(::println) }
+            indexer.index.lookup(term).ifPresent { it.forEach { println(retrieveAndFormat(it)) } }
             continue // skip redundant if
         }
         if (input.startsWith('w')) {
             Thread.sleep(1000) // wait a second...
         }
     } while (true)
+}
+
+private fun retrieveAndFormat(li: LineInfo): String {
+    val line = File(li.fileName).readLines()[li.lineNumber - 1]
+    return "${li.fileName}(${li.lineNumber}): " + line
 }
